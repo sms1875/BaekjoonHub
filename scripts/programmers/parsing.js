@@ -14,7 +14,7 @@
 async function parseData() {
   const link = document.querySelector('head > meta[name$=url]').content.replace(/\?.*/g, '').trim();
   const problemId = document.querySelector('div.main > div.lesson-content').getAttribute('data-lesson-id');
-  const level = document.querySelector('body > div.main > div.lesson-content').getAttribute("data-challenge-level")
+  const level = document.querySelector('body > div.main > div.lesson-content').getAttribute('data-challenge-level');
   const division = [...document.querySelector('ol.breadcrumb').childNodes]
     .filter((x) => x.className !== 'active')
     .map((x) => x.innerText)
@@ -75,7 +75,7 @@ async function makeData(origin) {
   `### 제출 일자\n\n` +
   `${dateInfo}\n\n` +
   `### 문제 설명\n\n${problem_description}\n\n` +
-  `> 출처: 프로그래머스 코딩 테스트 연습, https://school.programmers.co.kr/learn/challenges` + 
+  `> 출처: 프로그래머스 코딩 테스트 연습, https://school.programmers.co.kr/learn/challenges\n\n` + 
   `### 코드\n\n\`\`\`${language_extension}\n${code}\n\`\`\`\n`;
 
   return { problemId, directory, message, fileName, readme, code };
