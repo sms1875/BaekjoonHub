@@ -59,7 +59,9 @@ async function makeData(origin) {
   `---\n` +
   `layout: post\n` +
   `title: "[${level}] ${title} - ${problemId}"\n` +
-  `date: ${formattedDate} ${dateParts[3]}\n` +
+  `date: ${formattedDate}\n` +
+  // TODO: MM:HH:SS 인식불가 수정
+  // `date: ${formattedDate} ${dateParts[3]}\n` +
   `categories: [Coding Test, Programmers]\n` +
   `tags: [${language_extension}]\n` +
   `---\n\n` +
@@ -72,8 +74,6 @@ async function makeData(origin) {
   `${division.replace('/', ' > ')}\n\n` + 
   `### 채점결과\n\n` + 
   `${result_message}\n\n` +
-  `### 제출 일자\n\n` +
-  `${dateInfo}\n\n` +
   `### 문제 설명\n\n${problem_description}\n\n` +
   `> 출처: 프로그래머스 코딩 테스트 연습, https://school.programmers.co.kr/learn/challenges\n\n` + 
   `### 코드\n\n\`\`\`${language_extension}\n${code}\n\`\`\`\n`;
