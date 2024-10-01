@@ -158,11 +158,18 @@ function convertResultTableHeader(header) {
   }
 }
 
+function sanitizeImageUrl(url) {
+  url = url.replace(/%20/g, '-').replace(/[^a-zA-Z0-9-_./]/g, '');
+  url = url.replace('https//', 'https://'); // 'https//'를 'https://'로 수정
+  return url;
+}
+
 function convertImageTagAbsoluteURL(doc = document) {
-  if(isNull(doc)) return;
+  if (isNull(doc)) return;
   // img tag replace Relative URL to Absolute URL.
   Array.from(doc.getElementsByTagName('img'), (x) => {
-    x.setAttribute('src', x.currentSrc);
+    let imgUrl = sanitizeImageUrl(x.src); // 이미지 URL의 특수 문자 제거 및 'https//' 수정
+    x.setAttribute('src', imgUrl);
     return x;
   });
 }
@@ -173,7 +180,7 @@ function convertImageTagAbsoluteURL(doc = document) {
  * @param {Date} date
  * @return {string} 포맷된 스트링
  */
-function getDateString(date){
+function getDateString(date) {
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
   const day = date.getDate().toString().padStart(2, '0');
@@ -182,5 +189,4 @@ function getDateString(date){
   const seconds = date.getSeconds().toString().padStart(2, '0');
 
   return `${year}년 ${month}월 ${day}일 ${hours}:${minutes}:${seconds}`;
-
 }
