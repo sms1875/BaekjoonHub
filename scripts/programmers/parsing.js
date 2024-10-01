@@ -45,26 +45,64 @@ async function parseData() {
 
 async function makeData(origin) {
   const { problem_description, problemId, level, result_message, division, language_extension, title, runtime, memory, code, language } = origin;
-  const directory = await getDirNameByOrgOption(`프로그래머스/${level}/${problemId}. ${convertSingleCharToDoubleChar(title)}`, language);
+  const directory = `_posts`;
   const levelWithLv = `${level}`.includes('lv') ? level : `lv${level}`.replace('lv', 'level ');
   const message = `[${levelWithLv}] Title: ${title}, Time: ${runtime}, Memory: ${memory} -BaekjoonHub`;
-  const fileName = `${convertSingleCharToDoubleChar(title)}.${language_extension}`;
+
   const dateInfo = getDateString(new Date(Date.now()));
+  const dateParts = dateInfo.split(' '); // 예시: "2024년 09월 30일 16:26:26"
+  const formattedDate = `${dateParts[0].replace('년', '-')}${dateParts[1].replace('월', '-').padStart(3, '0')}${dateParts[2].replace('일', '').padStart(2, '0')}`; // "2024-09-30" 형태로 변환
+
+  const fileName = `${formattedDate}-${convertSingleCharToDoubleChar(title)}.md`;
   // prettier-ignore
   const readme =
-    `# [${levelWithLv}] ${title} - ${problemId} \n\n`
-    + `[문제 링크](${link}) \n\n`
-    + `### 성능 요약\n\n`
-    + `메모리: ${memory}, `
-    + `시간: ${runtime}\n\n`
-    + `### 구분\n\n`
-    + `${division.replace('/', ' > ')}\n\n`
-    + `### 채점결과\n\n`
-    + `${result_message}\n\n`
-    + `### 제출 일자\n\n`
-    + `${dateInfo}\n\n`
-    + `### 문제 설명\n\n`
-    + `${problem_description}\n\n`
-    + `> 출처: 프로그래머스 코딩 테스트 연습, https://school.programmers.co.kr/learn/challenges`;
+  `---\n` +
+  `layout: post\n` +
+  `title: "[${level}] ${title} - ${problemId}"\n` +
+  `date: ${formattedDate} ${dateParts[3]}\n` +
+  `categories: [Coding Test, Programmers]\n` +
+  `tags: [${language_extension}]\n` +
+  `---\n\n` +
+  `### 문제 링크\n\n` +
+  `[문제 링크](${link})\n\n` +
+  `### 성능 요약\n\n` +
+  `메모리: ${memory}, ` +
+  `시간: ${runtime}\n\n` +
+  `### 구분\n\n` + 
+  `${division.replace('/', ' > ')}\n\n` + 
+  `### 채점결과\n\n` + 
+  `${result_message}\n\n` +
+  `### 제출 일자\n\n` +
+  `${dateInfo}\n\n` +
+  `### 문제 설명\n\n${problem_description}\n\n` +
+  `> 출처: 프로그래머스 코딩 테스트 연습, https://school.programmers.co.kr/learn/challenges` + 
+  `### 코드\n\n\`\`\`${language_extension}\n${code}\n\`\`\`\n`;
+
   return { problemId, directory, message, fileName, readme, code };
 }
+
+// async function makeData(origin) {
+//   const { problem_description, problemId, level, result_message, division, language_extension, title, runtime, memory, code, language } = origin;
+//   const directory = await getDirNameByOrgOption(`프로그래머스/${level}/${problemId}. ${convertSingleCharToDoubleChar(title)}`, language);
+//   const levelWithLv = `${level}`.includes('lv') ? level : `lv${level}`.replace('lv', 'level ');
+//   const message = `[${levelWithLv}] Title: ${title}, Time: ${runtime}, Memory: ${memory} -BaekjoonHub`;
+//   const fileName = `${convertSingleCharToDoubleChar(title)}.${language_extension}`;
+//   const dateInfo = getDateString(new Date(Date.now()));
+//   // prettier-ignore
+//   const readme =
+//     `# [${levelWithLv}] ${title} - ${problemId} \n\n`
+//     + `[문제 링크](${link}) \n\n`
+//     + `### 성능 요약\n\n`
+//     + `메모리: ${memory}, `
+//     + `시간: ${runtime}\n\n`
+//     + `### 구분\n\n`
+//     + `${division.replace('/', ' > ')}\n\n`
+//     + `### 채점결과\n\n`
+//     + `${result_message}\n\n`
+//     + `### 제출 일자\n\n`
+//     + `${dateInfo}\n\n`
+//     + `### 문제 설명\n\n`
+//     + `${problem_description}\n\n`
+//     + `> 출처: 프로그래머스 코딩 테스트 연습, https://school.programmers.co.kr/learn/challenges`;
+//   return { problemId, directory, message, fileName, readme, code };
+// }
