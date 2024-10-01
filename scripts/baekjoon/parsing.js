@@ -50,7 +50,7 @@ async function makeDetailMessageAndReadme(data) {
 
   // 기존 경로: `백준/<레벨>/<문제 ID>. <문제 제목>`
   // 변경된 경로: `_posts/YYYY-MM-DD-문제제목.md`
-  const directory = `_posts`;
+  const directory = `_posts/codingtest`;
   const fileName = `${formattedDate}-${convertSingleCharToDoubleChar(title)}.md`;
 
   // Jekyll 블로그 포스트 형식에 맞는 커밋 메시지 생성
