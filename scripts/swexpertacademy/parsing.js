@@ -78,32 +78,70 @@ async function parseData() {
   const code = data.code;
   log('파싱 완료');
   // eslint-disable-next-line consistent-return
-  return makeData({ link, problemId, level, title, extension, code, runtime, memory, length, submissionTime, language});
+  return makeData({ link, problemId, level, title, extension, code, runtime, memory, length, submissionTime, language });
 }
 
 async function makeData(origin) {
   const { link, problemId, level, extension, title, runtime, memory, code, length, submissionTime, language } = origin;
   /*
-  * SWEA의 경우에는 JAVA 같이 모두 대문자인 경우가 존재합니다. 하지만 타 플랫폼들(백준, 프로그래머스)는 첫문자가 모두 대문자로 시작합니다.
-  * 그래서 이와 같은 케이스를 처리를 위해 첫문자만 대문자를 유지하고 나머지 문자는 소문자로 변환합니다.
-  * C++ 같은 경우에는 문자가 그대로 유지됩니다.
-  * */
-  const lang = (language === language.toUpperCase()) ? language.substring(0, 1) + language.substring(1).toLowerCase() : language
-  const directory = await getDirNameByOrgOption(`SWEA/${level}/${problemId}. ${convertSingleCharToDoubleChar(title)}`, lang);
+   * SWEA의 경우에는 JAVA 같이 모두 대문자인 경우가 존재합니다. 하지만 타 플랫폼들(백준, 프로그래머스)는 첫문자가 모두 대문자로 시작합니다.
+   * 그래서 이와 같은 케이스를 처리를 위해 첫문자만 대문자를 유지하고 나머지 문자는 소문자로 변환합니다.
+   * C++ 같은 경우에는 문자가 그대로 유지됩니다.
+   * */
+  const lang = language === language.toUpperCase() ? language.substring(0, 1) + language.substring(1).toLowerCase() : language;
+  const directory = `_posts`;
   const message = `[${level}] Title: ${title}, Time: ${runtime}, Memory: ${memory} -BaekjoonHub`;
-  const fileName = `${convertSingleCharToDoubleChar(title)}.${extension}`;
-  const dateInfo = submissionTime ?? getDateString(new Date(Date.now()));
+
+  const dateInfo = getDateString(new Date(Date.now()));
+  const dateParts = dateInfo.split(' '); // 예시: "2024년 09월 30일 16:26:26"
+  const formattedDate = `${dateParts[0].replace('년', '-')}${dateParts[1].replace('월', '-').padStart(3, '0')}${dateParts[2].replace('일', '').padStart(2, '0')}`; // "2024-09-30" 형태로 변환
+
+  const fileName = `${formattedDate}-${convertSingleCharToDoubleChar(title)}.md`;
   // prettier-ignore
   const readme =
-    `# [${level}] ${title} - ${problemId} \n\n`
-    + `[문제 링크](${link}) \n\n`
-    + `### 성능 요약\n\n`
-    + `메모리: ${memory}, `
-    + `시간: ${runtime}, `
-    + `코드길이: ${length} Bytes\n\n`
-    + `### 제출 일자\n\n`
-    + `${dateInfo}\n\n`
-    + `\n\n`
-    + `> 출처: SW Expert Academy, https://swexpertacademy.com/main/code/problem/problemList.do`;
+  `---\n` +
+  `layout: post\n` +
+  `title: "[${level}] ${title} - ${problemId}"\n` +
+  `date: ${formattedDate}\n` +
+  // TODO: MM:HH:SS 인식불가 수정
+  // `date: ${formattedDate} ${dateParts[3]}\n` +
+  `categories: [Coding Test, SWEA]\n` +
+  `tags: [${extension}]\n` +
+  `---\n\n` +
+  `### 문제 링크\n\n` +
+  `[문제 링크](${link})\n\n` +
+  `### 성능 요약\n\n` +
+  `메모리: ${memory}, ` +
+  `시간: ${runtime}\n\n` +
+  `코드길이: ${length} Bytes\n\n` + 
+  `> 출처: SW Expert Academy, https://swexpertacademy.com/main/code/problem/problemList.do\n\n` +
+  `### 코드\n\n\`\`\`${lang}\n${code}\n\`\`\`\n`;
   return { problemId, directory, message, fileName, readme, code };
 }
+
+// async function makeData(origin) {
+//   const { link, problemId, level, extension, title, runtime, memory, code, length, submissionTime, language } = origin;
+//   /*
+//   * SWEA의 경우에는 JAVA 같이 모두 대문자인 경우가 존재합니다. 하지만 타 플랫폼들(백준, 프로그래머스)는 첫문자가 모두 대문자로 시작합니다.
+//   * 그래서 이와 같은 케이스를 처리를 위해 첫문자만 대문자를 유지하고 나머지 문자는 소문자로 변환합니다.
+//   * C++ 같은 경우에는 문자가 그대로 유지됩니다.
+//   * */
+//   const lang = (language === language.toUpperCase()) ? language.substring(0, 1) + language.substring(1).toLowerCase() : language
+//   const directory = await getDirNameByOrgOption(`SWEA/${level}/${problemId}. ${convertSingleCharToDoubleChar(title)}`, lang);
+//   const message = `[${level}] Title: ${title}, Time: ${runtime}, Memory: ${memory} -BaekjoonHub`;
+//   const fileName = `${convertSingleCharToDoubleChar(title)}.${extension}`;
+//   const dateInfo = submissionTime ?? getDateString(new Date(Date.now()));
+//   // prettier-ignore
+//   const readme =
+//     `# [${level}] ${title} - ${problemId} \n\n`
+//     + `[문제 링크](${link}) \n\n`
+//     + `### 성능 요약\n\n`
+//     + `메모리: ${memory}, `
+//     + `시간: ${runtime}, `
+//     + `코드길이: ${length} Bytes\n\n`
+//     + `### 제출 일자\n\n`
+//     + `${dateInfo}\n\n`
+//     + `\n\n`
+//     + `> 출처: SW Expert Academy, https://swexpertacademy.com/main/code/problem/problemList.do`;
+//   return { problemId, directory, message, fileName, readme, code };
+// }
