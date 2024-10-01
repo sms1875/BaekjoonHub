@@ -59,9 +59,7 @@ async function makeData(origin) {
   `---\n` +
   `layout: post\n` +
   `title: "[${level}] ${title} - ${problemId}"\n` +
-  `date: ${formattedDate}\n` +
-  // TODO: MM:HH:SS 인식불가 수정
-  // `date: ${formattedDate} ${dateParts[3]}\n` +
+  `date: ${formattedDate} ${dateParts[3]}+0900\n` +
   `categories: [Coding Test, Programmers]\n` +
   `tags: [${language_extension}]\n` +
   `---\n\n` +

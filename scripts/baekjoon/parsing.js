@@ -62,7 +62,7 @@ async function makeDetailMessageAndReadme(data) {
     `---\n` +
     `layout: post\n` +
     `title: "[${level}] ${title} - ${problemId}"\n` +
-    `date: ${formattedDate} ${dateParts[3]}\n` +
+    `date: ${formattedDate} ${dateParts[3]}+0900\n` +
     `categories: [Coding Test, Baekjoon]\n` +
     `tags: [${category},${languages[language]}]\n` +
     `---\n\n` +
