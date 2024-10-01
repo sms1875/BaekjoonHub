@@ -41,34 +41,42 @@ async function findData(data) {
  * @returns {Object} { directory, fileName, message, readme, code }
  */
 async function makeDetailMessageAndReadme(data) {
-  const { problemId, submissionId, result, title, level, problem_tags,
-    problem_description, problem_input, problem_output, submissionTime,
-    code, language, memory, runtime } = data;
-  const score = parseNumberFromString(result);
-  const directory = await getDirNameByOrgOption(
-    `백준/${level.replace(/ .*/, '')}/${problemId}. ${convertSingleCharToDoubleChar(title)}`,
-    langVersionRemove(language, null)
-  );
-  const message = `[${level}] Title: ${title}, Time: ${runtime} ms, Memory: ${memory} KB`
-    + ((isNaN(score)) ? ' ' : `, Score: ${score} point `) // 서브 태스크가 있는 문제로, 점수가 있는 경우 점수까지 커밋 메시지에 표기
-    + `-BaekjoonHub`;
-  const category = problem_tags.join(', ');
-  const fileName = `${convertSingleCharToDoubleChar(title)}.${languages[language]}`;
+  const { problemId, submissionId, title, level, problem_tags, problem_description, problem_input, problem_output, submissionTime, code, language, memory, runtime } = data;
+
+  // 기존 directory 생성 방식을 `_posts`로 변경
   const dateInfo = submissionTime ?? getDateString(new Date(Date.now()));
-  // prettier-ignore-start
-  const readme = `# [${level}] ${title} - ${problemId} \n\n`
-    + `[문제 링크](https://www.acmicpc.net/problem/${problemId}) \n\n`
-    + `### 성능 요약\n\n`
-    + `메모리: ${memory} KB, `
-    + `시간: ${runtime} ms\n\n`
-    + `### 분류\n\n`
-    + `${category || "Empty"}\n\n` + (!!problem_description ? ''
-    + `### 제출 일자\n\n`
-    + `${dateInfo}\n\n`
-      + `### 문제 설명\n\n${problem_description}\n\n`
-      + `### 입력 \n\n ${problem_input}\n\n`
-      + `### 출력 \n\n ${problem_output}\n\n` : '');
-  // prettier-ignore-end
+  const dateParts = dateInfo.split(' '); // 예시: "2024년 09월 30일 16:26:26"
+  const formattedDate = `${dateParts[0].replace('년', '-')}${dateParts[1].replace('월', '-').padStart(3, '0')}${dateParts[2].replace('일', '').padStart(2, '0')}`; // "2024-09-30" 형태로 변환
+
+  // 기존 경로: `백준/<레벨>/<문제 ID>. <문제 제목>`
+  // 변경된 경로: `_posts/YYYY-MM-DD-문제제목.md`
+  const directory = `_posts`;
+  const fileName = `${formattedDate}-${convertSingleCharToDoubleChar(title)}.md`;
+
+  // Jekyll 블로그 포스트 형식에 맞는 커밋 메시지 생성
+  const message = `[${level}] Title: ${title}, Time: ${runtime} ms, Memory: ${memory} KB` + `- BaekjoonHub 자동 업로드`;
+
+  // 블로그의 포스트 형식으로 README 내용 설정
+  const category = problem_tags.join(', ');
+  const readme =
+    `---\n` +
+    `layout: post\n` +
+    `title: "[${level}] ${title} - ${problemId}"\n` +
+    `date: ${formattedDate}\n` +
+    `categories: [Coding Test, Baekjoon]\n` +
+    `tags: [${category},${languages[language]}]\n` +
+    `---\n\n` +
+    `### 문제 링크\n\n` +
+    `[문제 링크](https://www.acmicpc.net/problem/${problemId})\n\n` +
+    `### 성능 요약\n\n` +
+    `메모리: ${memory} KB, ` +
+    `시간: ${runtime} ms\n\n` +
+    `### 문제 설명\n\n${problem_description}\n\n` +
+    `### 입력\n\n ${problem_input}\n\n` +
+    `### 출력\n\n ${problem_output}\n\n` +
+    `### 코드\n\n\`\`\`${languages[language]}\n${code}\n\`\`\`\n`;
+
+  // directory와 fileName을 반환하여 GitHub 블로그의 `_posts` 경로에 파일 업로드
   return {
     directory,
     fileName,
@@ -77,6 +85,44 @@ async function makeDetailMessageAndReadme(data) {
     code
   };
 }
+
+// async function makeDetailMessageAndReadme(data) {
+//   const { problemId, submissionId, result, title, level, problem_tags,
+//     problem_description, problem_input, problem_output, submissionTime,
+//     code, language, memory, runtime } = data;
+//   const score = parseNumberFromString(result);
+//   const directory = await getDirNameByOrgOption(
+//     `백준/${level.replace(/ .*/, '')}/${problemId}. ${convertSingleCharToDoubleChar(title)}`,
+//     langVersionRemove(language, null)
+//   );
+//   const message = `[${level}] Title: ${title}, Time: ${runtime} ms, Memory: ${memory} KB`
+//     + ((isNaN(score)) ? ' ' : `, Score: ${score} point `) // 서브 태스크가 있는 문제로, 점수가 있는 경우 점수까지 커밋 메시지에 표기
+//     + `-BaekjoonHub`;
+//   const category = problem_tags.join(', ');
+//   const fileName = `${convertSingleCharToDoubleChar(title)}.${languages[language]}`;
+//   const dateInfo = submissionTime ?? getDateString(new Date(Date.now()));
+//   // prettier-ignore-start
+//   const readme = `# [${level}] ${title} - ${problemId} \n\n`
+//     + `[문제 링크](https://www.acmicpc.net/problem/${problemId}) \n\n`
+//     + `### 성능 요약\n\n`
+//     + `메모리: ${memory} KB, `
+//     + `시간: ${runtime} ms\n\n`
+//     + `### 분류\n\n`
+//     + `${category || "Empty"}\n\n` + (!!problem_description ? ''
+//     + `### 제출 일자\n\n`
+//     + `${dateInfo}\n\n`
+//       + `### 문제 설명\n\n${problem_description}\n\n`
+//       + `### 입력 \n\n ${problem_input}\n\n`
+//       + `### 출력 \n\n ${problem_output}\n\n` : '');
+//   // prettier-ignore-end
+//   return {
+//     directory,
+//     fileName,
+//     message,
+//     readme,
+//     code
+//   };
+// }
 
 /*
   현재 로그인된 유저를 파싱합니다.

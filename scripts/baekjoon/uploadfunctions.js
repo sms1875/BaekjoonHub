@@ -9,14 +9,22 @@
  * @returns {Promise<void>}
  */
 async function uploadOneSolveProblemOnGit(bojData, cb) {
+  const { code, readme, directory, fileName, message } = bojData;
   const token = await getToken();
   const hook = await getHook();
-  if (isNull(token) || isNull(hook)) {
-    console.error('token or hook is null', token, hook);
-    return;
-  }
-  return upload(token, hook, bojData.code, bojData.readme, bojData.directory, bojData.fileName, bojData.message, cb);
+
+  // `_posts` 디렉토리로 업로드
+  return upload(token, hook, code, readme, directory, fileName, message, cb);
 }
+// async function uploadOneSolveProblemOnGit(bojData, cb) {
+//   const token = await getToken();
+//   const hook = await getHook();
+//   if (isNull(token) || isNull(hook)) {
+//     console.error('token or hook is null', token, hook);
+//     return;
+//   }
+//   return upload(token, hook, bojData.code, bojData.readme, bojData.directory, bojData.fileName, bojData.message, cb);
+// }
 
 /** Github api를 사용하여 업로드를 합니다.
  * @see https://docs.github.com/en/rest/reference/repos#create-or-update-file-contents
@@ -30,7 +38,6 @@ async function uploadOneSolveProblemOnGit(bojData, cb) {
  * @param {function} cb - 콜백 함수 (ex. 업로드 후 로딩 아이콘 처리 등)
  */
 async function upload(token, hook, sourceText, readmeText, directory, filename, commitMessage, cb) {
-  /* 업로드 후 커밋 */
   const git = new GitHub(hook, token);
   const stats = await getStats();
   let default_branch = stats.branches[hook];
@@ -39,8 +46,11 @@ async function upload(token, hook, sourceText, readmeText, directory, filename, 
     stats.branches[hook] = default_branch;
   }
   const { refSHA, ref } = await git.getReference(default_branch);
+
+  // `_posts` 디렉토리에 맞는 파일 업로드 경로 설정
   const source = await git.createBlob(sourceText, `${directory}/${filename}`); // 소스코드 파일
-  const readme = await git.createBlob(readmeText, `${directory}/README.md`); // readme 파일
+  const readme = await git.createBlob(readmeText, `${directory}/${filename}`); // readme 파일 (여기서는 블로그 포스트)
+
   const treeSHA = await git.createTree(refSHA, [source, readme]);
   const commitSHA = await git.createCommit(commitMessage, treeSHA, refSHA);
   await git.updateHead(ref, commitSHA);
@@ -54,3 +64,32 @@ async function upload(token, hook, sourceText, readmeText, directory, filename, 
     cb(stats.branches, directory);
   }
 }
+// async function upload(token, hook, sourceText, readmeText, directory, filename, commitMessage, cb) {
+//   const dateInfo = new Date().toISOString().slice(0, 10); // YYYY-MM-DD 형식으로 생성
+//   // README.md 대신 새로운 파일명 : 2024-09-30-문제제목.md
+//   const ReadmeFileName = `${dateInfo}-${bojData.fileName.replace(/ /g, '_').replace(/\.cpp|\.java|\.py/, '')}.md`;
+
+//   /* 업로드 후 커밋 */
+//   const git = new GitHub(hook, token);
+//   const stats = await getStats();
+//   let default_branch = stats.branches[hook];
+//   if (isNull(default_branch)) {
+//     default_branch = await git.getDefaultBranchOnRepo();
+//     stats.branches[hook] = default_branch;
+//   }
+//   const { refSHA, ref } = await git.getReference(default_branch);
+//   const source = await git.createBlob(sourceText, `${directory}/${filename}`); // 소스코드 파일
+//   const readme = await git.createBlob(readmeText, `${directory}/${ReadmeFileName}`); // readme 파일
+//   const treeSHA = await git.createTree(refSHA, [source, readme]);
+//   const commitSHA = await git.createCommit(commitMessage, treeSHA, refSHA);
+//   await git.updateHead(ref, commitSHA);
+
+//   /* stats의 값을 갱신합니다. */
+//   updateObjectDatafromPath(stats.submission, `${hook}/${source.path}`, source.sha);
+//   updateObjectDatafromPath(stats.submission, `${hook}/${readme.path}`, readme.sha);
+//   await saveStats(stats);
+//   // 콜백 함수 실행
+//   if (typeof cb === 'function') {
+//     cb(stats.branches, directory);
+//   }
+// }
