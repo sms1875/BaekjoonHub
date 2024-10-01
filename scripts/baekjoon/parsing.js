@@ -19,14 +19,14 @@ async function findData(data) {
       let table = findFromResultTable();
       if (isEmpty(table)) return null;
       table = filter(table, {
-        'resultCategory': RESULT_CATEGORY.RESULT_ACCEPTED,
-        'username': findUsername(),
-        'language': table[0]["language"]
-      })
+        resultCategory: RESULT_CATEGORY.RESULT_ACCEPTED,
+        username: findUsername(),
+        language: table[0]['language'],
+      });
       data = selectBestSubmissionList(table)[0];
     }
     if (isNaN(Number(data.problemId)) || Number(data.problemId) < 1000) throw new Error(`정책상 대회 문제는 업로드 되지 않습니다. 대회 문제가 아니라고 판단된다면 이슈로 남겨주시길 바랍니다.\n문제 ID: ${data.problemId}`);
-    data = { ...data, ...await findProblemInfoAndSubmissionCode(data.problemId, data.submissionId) };
+    data = { ...data, ...(await findProblemInfoAndSubmissionCode(data.problemId, data.submissionId)) };
     const detail = await makeDetailMessageAndReadme(preProcessEmptyObj(data));
     return { ...data, ...detail }; // detail 만 반환해도 되나, 확장성을 위해 모든 데이터를 반환합니다.
   } catch (error) {
@@ -34,7 +34,7 @@ async function findData(data) {
   }
   return null;
 }
- 
+
 /**
  * 문제의 상세 정보를 가지고, 문제의 업로드할 디렉토리, 파일명, 커밋 메시지, 문제 설명을 파싱하여 반환합니다.
  * @param {Object} data
@@ -62,7 +62,7 @@ async function makeDetailMessageAndReadme(data) {
     `---\n` +
     `layout: post\n` +
     `title: "[${level}] ${title} - ${problemId}"\n` +
-    `date: ${formattedDate}\n` +
+    `date: ${formattedDate} ${dateParts[3]}\n` +
     `categories: [Coding Test, Baekjoon]\n` +
     `tags: [${category},${languages[language]}]\n` +
     `---\n\n` +
@@ -82,7 +82,7 @@ async function makeDetailMessageAndReadme(data) {
     fileName,
     message,
     readme,
-    code
+    code,
   };
 }
 
@@ -189,7 +189,7 @@ function parsingResultTableList(doc) {
     for (let j = 0; j < headers.length; j++) {
       obj[headers[j]] = cells[j];
     }
-    obj = { ...obj, ...obj.result, ...obj.problemId};
+    obj = { ...obj, ...obj.result, ...obj.problemId };
     list.push(obj);
   }
   log('TableList', list);
@@ -230,14 +230,17 @@ function findFromResultTable() {
 */
 function parseProblemDescription(doc = document) {
   convertImageTagAbsoluteURL(doc.getElementById('problem_description')); //이미지에 상대 경로가 있을 수 있으므로 이미지 경로를 절대 경로로 전환 합니다.
-  const problemId = doc.getElementsByTagName('title')[0].textContent.split(':')[0].replace(/[^0-9]/, '');
+  const problemId = doc
+    .getElementsByTagName('title')[0]
+    .textContent.split(':')[0]
+    .replace(/[^0-9]/, '');
   const problem_description = unescapeHtml(doc.getElementById('problem_description').innerHTML.trim());
   const problem_input = doc.getElementById('problem_input')?.innerHTML.trim?.().unescapeHtml?.() || 'Empty'; // eslint-disable-line
   const problem_output = doc.getElementById('problem_output')?.innerHTML.trim?.().unescapeHtml?.() || 'Empty'; // eslint-disable-line
   if (problemId && problem_description) {
     log(`문제번호 ${problemId}의 내용을 저장합니다.`);
-    updateProblemsFromStats({ problemId, problem_description, problem_input, problem_output});
-    return { problemId, problem_description, problem_input, problem_output};
+    updateProblemsFromStats({ problemId, problem_description, problem_input, problem_output });
+    return { problemId, problem_description, problem_input, problem_output };
   }
   return {};
 }
@@ -252,12 +255,11 @@ async function fetchProblemDescriptionById(problemId) {
 }
 
 async function fetchSubmitCodeById(submissionId) {
-  return fetch(`https://www.acmicpc.net/source/download/${submissionId}`, { method: 'GET' })
-    .then((res) => res.text())
+  return fetch(`https://www.acmicpc.net/source/download/${submissionId}`, { method: 'GET' }).then((res) => res.text());
 }
 
 async function fetchSolvedACById(problemId) {
-  return chrome.runtime.sendMessage({sender: "baekjoon", task : "SolvedApiCall", problemId : problemId});
+  return chrome.runtime.sendMessage({ sender: 'baekjoon', task: 'SolvedApiCall', problemId: problemId });
 }
 
 async function getProblemDescriptionById(problemId) {
@@ -298,7 +300,10 @@ async function findProblemInfoAndSubmissionCode(problemId, submissionId) {
   if (!isNull(problemId) && !isNull(submissionId)) {
     return Promise.all([getProblemDescriptionById(problemId), getSubmitCodeById(submissionId), getSolvedACById(problemId)])
       .then(([description, code, solvedJson]) => {
-        const problem_tags = solvedJson.tags.flatMap((tag) => tag.displayNames).filter((tag) => tag.language === 'ko').map((tag) => tag.name);
+        const problem_tags = solvedJson.tags
+          .flatMap((tag) => tag.displayNames)
+          .filter((tag) => tag.language === 'ko')
+          .map((tag) => tag.name);
         const title = solvedJson.titleKo;
         const level = bj_level[solvedJson.level];
 
@@ -328,7 +333,7 @@ async function fetchProblemInfoByIds(problemIds) {
   return asyncPool(1, dividedProblemIds, async (pids) => {
     const result = await fetch(`https://solved.ac/api/v3/problem/lookup?problemIds=${pids.join('%2C')}`, { method: 'GET' });
     return result.json();
-  }).then(results => results.flatMap(result => result));
+  }).then((results) => results.flatMap((result) => result));
 }
 
 /**
@@ -340,7 +345,7 @@ async function fetchProblemInfoByIds(problemIds) {
 async function fetchProblemDescriptionsByIds(problemIds) {
   return asyncPool(2, problemIds, async (problemId) => {
     return getProblemDescriptionById(problemId);
-  })
+  });
 }
 
 /**
@@ -353,8 +358,6 @@ async function fetchSubmissionCodeByIds(submissionIds) {
     return getSubmitCodeById(submissionId);
   });
 }
-
-
 
 /**
  * user가 problemId 에 제출한 리스트를 가져오는 함수
