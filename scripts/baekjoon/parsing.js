@@ -49,9 +49,9 @@ async function makeDetailMessageAndReadme(data) {
   const formattedDate = `${dateParts[0].replace('년', '-')}${dateParts[1].replace('월', '-').padStart(3, '0')}${dateParts[2].replace('일', '').padStart(2, '0')}`; // "2024-09-30" 형태로 변환
 
   // 기존 경로: `백준/<레벨>/<문제 ID>. <문제 제목>`
-  // 변경된 경로: `_posts/YYYY-MM-DD-문제제목.md`
+  // 변경된 경로: `_posts/YYYY-MM-DD-[레벨] [문제 제목] - [문제 ID].md`
   const directory = `_posts/codingtest`;
-  const fileName = `${formattedDate}-${convertSingleCharToDoubleChar(title)}.md`;
+  const fileName = `${formattedDate}-[${level}] ${title} - ${problemId}.md`;
 
   // Jekyll 블로그 포스트 형식에 맞는 커밋 메시지 생성
   const message = `[${level}] Title: ${title}, Time: ${runtime} ms, Memory: ${memory} KB` + `- BaekjoonHub 자동 업로드`;
